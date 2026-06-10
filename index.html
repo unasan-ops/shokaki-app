@@ -1,0 +1,359 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>消化器内科 紹介先選定アプリ（長野市）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Meiryo', 'Hiragino Sans', sans-serif; background: #f0f4f8; color: #2d3748; }
+  .header { background: #2b6cb0; color: white; padding: 16px 24px; }
+  .header h1 { font-size: 1.3rem; font-weight: bold; }
+  .header p { font-size: 0.8rem; opacity: 0.85; margin-top: 4px; }
+  .main { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+  .card { background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+  .card h2 { font-size: 1rem; font-weight: bold; color: #2b6cb0; margin-bottom: 14px; border-left: 4px solid #2b6cb0; padding-left: 10px; }
+  .input-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .input-row label { font-weight: bold; font-size: 0.9rem; white-space: nowrap; }
+  .zip-input { padding: 8px 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem; width: 160px; }
+  .zip-input:focus { outline: none; border-color: #2b6cb0; }
+  .town-display { padding: 8px 12px; background: #edf2f7; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 1rem; color: #4a5568; min-width: 220px; display: inline-block; }
+  .town-display.loading { color: #a0aec0; font-style: italic; }
+  .town-display.error { color: #c53030; }
+  .addr-input { padding: 8px 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem; width: 220px; }
+  .addr-input:focus { outline: none; border-color: #2b6cb0; }
+  .zip-hint { font-size: 0.78rem; color: #718096; }
+  .checkboxes { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .checkbox-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+  .checkbox-item:hover { border-color: #2b6cb0; background: #ebf8ff; }
+  .checkbox-item input[type=checkbox] { width: 16px; height: 16px; accent-color: #2b6cb0; }
+  .checkbox-item span { font-size: 0.88rem; font-weight: 500; }
+  .btn-search { background: #2b6cb0; color: white; border: none; padding: 12px 32px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.15s; }
+  .btn-search:hover { background: #2c5282; }
+  .btn-search:disabled { background: #a0aec0; cursor: not-allowed; }
+  .status { font-size: 0.88rem; color: #718096; margin-top: 10px; min-height: 20px; }
+  .status.error { color: #c53030; }
+  .result-count { font-size: 0.9rem; color: #4a5568; margin-bottom: 12px; }
+  .base-point { font-size: 0.82rem; color: #4a5568; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .base-point .bp-label { color: #718096; white-space: nowrap; }
+  .base-point .bp-addr { font-weight: 500; }
+  .base-point .bp-link { color: #2b6cb0; text-decoration: none; font-size: 0.78rem; white-space: nowrap; }
+  .base-point .bp-link:hover { text-decoration: underline; }
+  .hospital-card { background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); padding: 16px; margin-bottom: 14px; border-left: 5px solid #2b6cb0; }
+  .hospital-card.rank-1 { border-left-color: #d69e2e; }
+  .hospital-card.rank-2 { border-left-color: #a0aec0; }
+  .hospital-card.rank-3 { border-left-color: #c05621; }
+  .h-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .h-rank { font-size: 1.3rem; font-weight: bold; color: #718096; min-width: 32px; }
+  .rank-1 .h-rank { color: #d69e2e; }
+  .rank-2 .h-rank { color: #718096; }
+  .rank-3 .h-rank { color: #c05621; }
+  .h-name { font-size: 1.05rem; font-weight: bold; flex: 1; }
+  .h-dist { font-size: 0.88rem; color: #2b6cb0; font-weight: bold; white-space: nowrap; }
+  .h-body { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; font-size: 0.83rem; color: #4a5568; }
+  .h-body .item { display: flex; gap: 6px; }
+  .h-body .label { color: #718096; white-space: nowrap; }
+  .h-body .val { word-break: break-all; }
+  .h-body .val a { color: #2b6cb0; text-decoration: none; }
+  .h-body .val a:hover { text-decoration: underline; }
+  .features { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .feat-tag { font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
+  .feat-ok { background: #c6f6d5; color: #22543d; }
+  .feat-ng { background: #fed7d7; color: #742a2a; opacity: 0.6; }
+  .feat-liver-ok { background: #bee3f8; color: #2a4365; }
+  .no-result { text-align: center; color: #718096; padding: 40px; font-size: 0.95rem; }
+  @media (max-width: 600px) {
+    .h-body { grid-template-columns: 1fr; }
+    .checkboxes { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<div class="header">
+  <h1>消化器内科 紹介先選定アプリ（長野市）</h1>
+  <p>郵便番号と必要な検査項目を入力して、近隣の紹介先病院を検索します</p>
+</div>
+<div class="main">
+  <div class="card">
+    <h2>検索条件</h2>
+    <div class="input-row">
+      <label for="zipInput">郵便番号</label>
+      <input type="text" id="zipInput" class="zip-input" placeholder="例: 380-0823" maxlength="8">
+      <span id="townDisplay" class="town-display" style="display:none;"></span>
+    </div>
+    <div class="input-row" style="margin-top:8px; display:none;" id="addrRow">
+      <label for="addrInput">番地</label>
+      <input type="text" id="addrInput" class="addr-input" placeholder="例: 4丁目7-23（任意）">
+      <span class="zip-hint">省略可・入力で精度向上</span>
+    </div>
+    <div style="font-weight:bold; font-size:0.9rem; margin-bottom:8px; margin-top:14px; color:#4a5568;">必要な検査・条件（複数選択可・未選択は全件対象）</div>
+    <div class="checkboxes">
+      <label class="checkbox-item"><input type="checkbox" id="chk_upper"> <span>上部消化管内視鏡</span></label>
+      <label class="checkbox-item"><input type="checkbox" id="chk_lower"> <span>下部消化管内視鏡</span></label>
+      <label class="checkbox-item"><input type="checkbox" id="chk_us"> <span>腹部超音波（US）</span></label>
+      <label class="checkbox-item"><input type="checkbox" id="chk_ct"> <span>CT</span></label>
+      <label class="checkbox-item"><input type="checkbox" id="chk_mri"> <span>MRI</span></label>
+      <label class="checkbox-item"><input type="checkbox" id="chk_liver"> <span>信州肝疾患センター登録</span></label>
+    </div>
+    <button class="btn-search" id="btnSearch" onclick="doSearch()">検索する</button>
+    <div class="status" id="statusMsg"></div>
+  </div>
+  <div id="results"></div>
+  <div id="mapContainer" style="display:none; margin-bottom:24px;">
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div style="padding:14px 20px 10px; font-size:1rem; font-weight:bold; color:#2b6cb0; border-left:4px solid #2b6cb0; margin:0;">地図で確認</div>
+      <div id="map" style="height:420px; width:100%;"></div>
+    </div>
+  </div>
+</div>
+<script>const HOSPITALS = [{"name":"彦坂医院","type":"診療所","zip":"380-0904","address":"長野県長野市七瀬中町１７６","tel":"026-226-6930","amTime":"08:30-12:00","pmTime":"15:00-17:00","url":"http://www.hikosakaiin.jp","dept":"消化器内科、外科、肛門外科、麻酔科","access":"川中島バス 七瀬中町下車徒歩１分","note":"火、木曜は手術日のため、肛門科は午前休診","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市医師会「上部（胃）内視鏡検査も可能」","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（彦坂医院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（彦坂医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（彦坂医院：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（彦坂医院：MRI記載なし）","lat":36.646928,"lng":138.198599},{"name":"小林クリニック七瀬","type":"診療所","zip":"380-0922","address":"長野県長野市七瀬２０ー６","tel":"026-226-7880","amTime":"","pmTime":"","url":"https://k-clinic-nanase.com","dept":"糖尿病・代謝内科、消化器内科、内視鏡内科、外科、肛門外科、整形外科","access":"JR長野駅より徒歩5分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"標ぼう科目「内視鏡内科」","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（小林クリニック七瀬：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（小林クリニック七瀬：腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（小林クリニック七瀬：CT・スパイラルCT○）","mri":false,"mriNote":"長野市かかりつけ医機能情報（小林クリニック七瀬：MRI記載なし）","lat":36.643436,"lng":138.193649},{"name":"医療法人公生会 竹重病院","type":"病院","zip":"380-0815","address":"長野県長野市田町２０９９","tel":"026-234-1281","amTime":"09:00-13:00","pmTime":"14:00-18:00","url":"http://www.takeshige-hosp.com","dept":"内科、消化器内科、胃腸内科、外科、整形外科、小児科 他","access":"長野電鉄 権堂駅 徒歩8分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"caloo「内視鏡」記載、caloo.jp","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（竹重病院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（竹重病院：腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（竹重病院：CT・スパイラルCT○）","mri":true,"mriNote":"長野市かかりつけ医機能情報（竹重病院：MRI○）","lat":36.654583,"lng":138.197037},{"name":"平野内科小児科医院","type":"診療所","zip":"380-0803","address":"長野県長野市三輪１２４７","tel":"026-235-2611","amTime":"","pmTime":"","url":"https://www.hiranoiin.com/","dept":"内科、消化器内科、小児科","access":"長野電鉄権堂駅より徒歩１５分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"caloo口コミ「鼻から胃カメラ」実施","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（平野内科小児科医院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（平野内科小児科医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（平野内科小児科医院：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（平野内科小児科医院：MRI記載なし）","lat":36.654747,"lng":138.200516},{"name":"矢島内科医院","type":"診療所","zip":"380-0816","address":"長野県長野市三輪田町１３００","tel":"026-233-1231","amTime":"09:00-12:30","pmTime":"16:30-18:00","url":"","dept":"内科、循環器内科、消化器内科","access":"長野電鉄 権堂駅または善光寺下駅 徒歩5分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市医師会「上部消化管内視鏡検査（胃カメラ）予約実施」","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報（矢島内科医院：掲載あり、下部消化管内視鏡記載なし）","us":true,"usNote":"長野市かかりつけ医機能情報（矢島内科医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（矢島内科医院：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（矢島内科医院：MRI記載なし）","lat":36.656267,"lng":138.191925},{"name":"大門東クリニック","type":"診療所","zip":"380-0815","address":"長野県長野市鶴賀田町２４４７","tel":"026-235-2700","amTime":"09:00-12:00","pmTime":"16:00-18:00","url":"","dept":"消化器内科、外科、肛門外科","access":"長野電鉄 権堂 徒歩10分","note":"休診 日、祭日、火・水・木・金 午後","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市医師会「上部・下部消化管内視鏡検査の設備」","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（大門東クリニック：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（大門東クリニック：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（大門東クリニック：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（大門東クリニック：MRI記載なし）","lat":36.655792,"lng":138.190018},{"name":"東口病院","type":"病院","zip":"380-0921","address":"長野県長野市大字栗田１６１８番地１","tel":"026-227-0700","amTime":"08:30-11:30","pmTime":"15:00-17:00","url":"https://higashiguchi-hosp.or.jp/","dept":"消化器内科、こう門内科、外科、消化器外科、肛門外科、麻酔科","access":"JR・しなの鉄道 長野駅 徒歩5分","note":"月１回、木曜日午後は甲状腺外来","liverCenter":true,"upperEndoscopy":true,"upperNote":"消化器外科保有病院","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（東口病院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（東口病院：腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（東口病院：CT・スパイラルCT○）","mri":false,"mriNote":"長野市かかりつけ医機能情報（東口病院：MRI記載なし）","lat":36.639912,"lng":138.18978},{"name":"公益財団法人 倉石地域振興財団 栗田病院","type":"病院","zip":"380-0921","address":"長野県長野市栗田６９５","tel":"026-226-1311","amTime":"08:30-12:00","pmTime":"13:30-16:30","url":"https://www.kuritahp.or.jp/","dept":"内科、呼吸器内科、循環器内科、消化器内科、精神科、心療内科 他","access":"アルピコ交通 金井山線・東口線 栗田病院前 徒歩０分","note":"心療内科・精神科・歯科・小児歯科は予約制","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（栗田病院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（栗田病院：腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（栗田病院：CT・スパイラルCT○）","mri":true,"mriNote":"長野市かかりつけ医機能情報（栗田病院：MRI記載なし）","lat":36.635674,"lng":138.198898},{"name":"藤井クリニック","type":"診療所","zip":"380-0862","address":"長野県長野市桜枝町１２４４－１","tel":"026-231-5407","amTime":"09:00-12:15","pmTime":"15:00-17:45","url":"https://www.nagano-fujii-clinic.jp/","dept":"内科、循環器内科、消化器内科","access":"長野電鉄 善光寺下 徒歩15分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"公式サイト「経鼻内視鏡を導入」","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（藤井クリニック：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（藤井クリニック：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（藤井クリニック：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（藤井クリニック：MRI記載なし）","lat":36.659374,"lng":138.183825},{"name":"みやじま内科クリニック","type":"診療所","zip":"381-0034","address":"長野県長野市高田１２６１－２","tel":"026-227-7777","amTime":"","pmTime":"","url":"http://r.goope.jp/miya","dept":"内科、消化器内科、アレルギー科","access":"長野駅東口 バス 高田寺村下車 徒歩８分","note":"インターネットから予約可能","liverCenter":true,"upperEndoscopy":true,"upperNote":"公式サイト「上部消化管内視鏡（胃カメラ）経口・経鼻」","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報（みやじま内科クリニック：掲載あり、下部消化管内視鏡記載なし）","us":true,"usNote":"長野市かかりつけ医機能情報（みやじま内科クリニック：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（みやじま内科クリニック：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（みやじま内科クリニック：MRI記載なし）","lat":36.64091,"lng":138.213066},{"name":"荒井内科小児科医院","type":"診療所","zip":"380-0912","address":"長野県長野市稲葉１９４８−１","tel":"026-221-4411","amTime":"08:30-12:00","pmTime":"15:15-17:30","url":"http://araiiin.byoinnavi.jp/","dept":"内科、消化器内科、胃腸内科、小児科","access":"アルピコバス 日詰バス停より徒歩２分","note":"","liverCenter":false,"upperEndoscopy":false,"upperNote":"長野市医師会に内科・小児科のみ記載、内視鏡記述なし","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報（荒井内科小児科医院：掲載あり、下部消化管内視鏡記載なし）","us":true,"usNote":"長野市かかりつけ医機能情報（荒井内科小児科医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（荒井内科小児科医院：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（荒井内科小児科医院：MRI記載なし）","lat":36.635937,"lng":138.213058},{"name":"田中病院","type":"病院","zip":"381-0037","address":"長野県長野市西和田１－２９－８","tel":"026-243-1263","amTime":"08:30-12:50","pmTime":"14:30-17:50","url":"http://www.tanaka-hp.com","dept":"内科、消化器内科、胃腸内科、外科、肛門外科、小児科","access":"長電バス 平林線 西和田 徒歩1分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"公式サイトtanaka-hp.com「上部内視鏡（胃カメラ）」","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（田中病院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（田中病院：腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（田中病院：CT・スパイラルCT○）","mri":false,"mriNote":"長野市かかりつけ医機能情報（田中病院：MRI記載なし）","lat":36.653725,"lng":138.219604},{"name":"金木内科クリニック","type":"診療所","zip":"380-0941","address":"長野県長野市安茂里","tel":"026-226-3553","amTime":"08:30-12:30","pmTime":"14:30-18:00","url":"http://kanekinaika.sakura.ne.jp","dept":"内科、呼吸器内科、消化器内科、肝臓内科、内視鏡内科","access":"しなの鉄道 安茂里駅 徒歩15分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"標ぼう科目「内視鏡内科」","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（金木内科クリニック：下部消化管内視鏡○）","us":true,"usNote":"施設確認（腹部超音波検査実施）","ct":false,"ctNote":"長野市かかりつけ医機能情報（金木内科クリニック：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（金木内科クリニック：MRI記載なし）","lat":36.637411,"lng":138.173048},{"name":"伊勢宮腎臓内科クリニック","type":"診療所","zip":"380-0958","address":"長野県長野市伊勢宮１ー２３ー１","tel":"026-224-8877","amTime":"08:00-12:30","pmTime":"13:00-17:30","url":"http://park10.wakwak.com/~isemiyaichougeka/","dept":"内科、糖尿病内科、消化器内科、腎臓内科、外科、消化器外科","access":"長野駅よりタクシーで１０分","note":"木曜午後休診（手術のため）","liverCenter":false,"upperEndoscopy":true,"upperNote":"hospita.jp「人間ドック(胃内視鏡)」専門","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（伊勢宮腎臓内科クリニック：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（伊勢宮腎臓内科クリニック：腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（伊勢宮腎臓内科クリニック：CT・スパイラルCT○）","mri":false,"mriNote":"長野市かかりつけ医機能情報（伊勢宮腎臓内科クリニック：MRI記載なし）","lat":36.631557,"lng":138.172241},{"name":"まつした胃腸内科外科クリニック","type":"診療所","zip":"381-0022","address":"長野県長野市大豆島５４２−１","tel":"026-222-2000","amTime":"08:45-12:00","pmTime":"","url":"","dept":"消化器内科、内視鏡内科、肛門内科、外科","access":"アルピコバス わかば公園バス停より南方へ徒歩５分","note":"予約優先","liverCenter":true,"upperEndoscopy":true,"upperNote":"標ぼう科目「内視鏡内科」・AI内視鏡","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（まつした胃腸内科外科クリニック：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（まつした胃腸内科外科クリニック：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（まつした胃腸内科外科クリニック：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（まつした胃腸内科外科クリニック：MRI記載なし）","lat":36.629673,"lng":138.222458},{"name":"医療法人 石黒内科医院","type":"診療所","zip":"381-0013","address":"長野県長野市桜新町６５５ー７","tel":"026-243-7189","amTime":"09:00-13:00","pmTime":"15:00-17:45","url":"","dept":"内科、循環器内科、消化器内科、小児科","access":"長電バス平林線 東郵便局下車 徒歩５分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（石黒内科医院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（石黒内科医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（石黒内科医院：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（石黒内科医院：MRI記載なし）","lat":36.654259,"lng":138.231216},{"name":"医療法人桂俊会 神楽橋医院","type":"診療所","zip":"381-0053","address":"長野県長野市神楽橋１０番地１１３","tel":"026-244-5600","amTime":"08:30-17:30","pmTime":"08:30-12:00","url":"https://www.kagurabashi.com","dept":"内科、消化器内科、外科、乳腺外科、肛門外科","access":"アルピコ交通バス 北部中学校前 徒歩2分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"長野市医師会「消化器内視鏡学会認定専門医」在籍","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（神楽橋医院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（神楽橋医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（神楽橋医院：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（神楽橋医院：MRI記載なし）","lat":36.680706,"lng":138.209213},{"name":"中村医院","type":"診療所","zip":"381-0042","address":"長野県長野市稲田２丁目７番３１号","tel":"026-296-1700","amTime":"09:00-12:30","pmTime":"14:30-17:30","url":"https://iin-nakamura.jp/index.html","dept":"消化器内科、外科","access":"長電バス柳原行き稲田北で下車徒歩3分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"公式サイト「消化器内視鏡専門医による上部消化管内視鏡」","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（中村医院：下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（中村医院：腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（中村医院：CT・スパイラルCT○）","mri":false,"mriNote":"長野市かかりつけ医機能情報（中村医院：MRI記載なし）","lat":36.676674,"lng":138.222153},{"name":"わたなべクリニック","type":"診療所","zip":"381-2246","address":"長野県長野市丹波島２丁目１８番地１５号","tel":"026-285-3777","amTime":"09:00-12:00","pmTime":"14:30-17:30","url":"https://2853777.mdja.jp/","dept":"内科、消化器内科","access":"川中島バス 丹波島仲町下車、徒歩２分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"公式サイト「毎日胃カメラを実施」","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報（わたなべクリニック：掲載あり、下部消化管内視鏡記載なし）","us":true,"usNote":"施設確認（腹部超音波検査実施）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.616959,"lng":138.170563},{"name":"長野内科消化器内視鏡クリニック神林医院","type":"診療所","zip":"381-2211","address":"長野県長野市稲里町下氷鉋１２５９","tel":"026-283-0781","amTime":"","pmTime":"","url":"","dept":"内科、消化器内科、老年内科、女性内科、内視鏡内科、肛門内科、麻酔科","access":"ぐるりん号神林医院前より徒歩２分","note":"金曜日 日曜 祝祭日 休診","liverCenter":false,"upperEndoscopy":true,"upperNote":"標ぼう科目「内視鏡内科」・施設名に内視鏡含む","lowerEndoscopy":true,"lowerNote":"施設確認（下部消化管内視鏡実施）","us":true,"usNote":"長野市かかりつけ医機能情報（神林医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（神林医院：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（神林医院：MRI記載なし）","lat":36.610958,"lng":138.181473},{"name":"金井内科医院","type":"診療所","zip":"381-0005","address":"長野県長野市北堀６４９ー１","tel":"026-296-0457","amTime":"08:30-12:00","pmTime":"15:00-17:30","url":"","dept":"内科、消化器内科","access":"長野電鉄 朝陽駅 徒歩5分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報（金井内科医院：掲載あり、上部○のみ、下部記載なし）","us":true,"usNote":"長野市かかりつけ医機能情報（金井内科医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（金井内科医院：CT記載なし）","mri":false,"mriNote":"長野市かかりつけ医機能情報（金井内科医院：MRI記載なし）","lat":36.668621,"lng":138.240509},{"name":"かねばこ内科クリニック","type":"診療所","zip":"381-0007","address":"長野県長野市金箱３２０−２","tel":"026-295-6050","amTime":"","pmTime":"","url":"http://kanebako.jp/guide/index.html","dept":"内科、消化器内科、肝臓内科","access":"東北ぐるりん号JA長野平農協より徒歩３分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.676502,"lng":138.248535},{"name":"独立行政法人国立病院機構東長野病院","type":"病院","zip":"381-0085","address":"長野県長野市上野２丁目４７７番地","tel":"026-296-1111","amTime":"08:30-11:00","pmTime":"","url":"https://higashinagano.hosp.go.jp/","dept":"内科、呼吸器内科、循環器内科、消化器内科、外科、整形外科、小児科 他","access":"北しなの線 三才 徒歩10分、または長野駅より長電バス東長野病院行き","note":"完全予約制","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報（東長野病院：掲載あり、下部消化管内視鏡記載なし）","us":true,"usNote":"長野市かかりつけ医機能情報（東長野病院：腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（東長野病院：CT・スパイラルCT○）","mri":false,"mriNote":"長野市かかりつけ医機能情報（東長野病院：MRI記載なし）","lat":36.68774,"lng":138.239441},{"name":"医療法人 立岩医院","type":"診療所","zip":"381-0101","address":"長野県長野市若穂綿内８７４９－３","tel":"026-282-5405","amTime":"08:30-18:00","pmTime":"","url":"http://www.tateiwa-clinic.com/index.html","dept":"内科、消化器内科、小児科","access":"長電バス 綿内駅から１０分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"公式サイトtateiwa-clinic.com「口から内視鏡を挿入」","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.626751,"lng":138.258347},{"name":"峯村医院","type":"診療所","zip":"381-0103","address":"長野県長野市若穂川田１６８４ー１","tel":"026-282-6172","amTime":"09:00-12:00","pmTime":"15:00-18:00","url":"","dept":"循環器内科、消化器内科、外科","access":"長野電鉄バス保科線 領家５分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.608269,"lng":138.245361},{"name":"医療法人いしぐろクリニック","type":"診療所","zip":"381-2221","address":"長野県長野市川中島町御厨７０６－１","tel":"026-286-6363","amTime":"08:00-12:30","pmTime":"14:30-17:30","url":"","dept":"内科、消化器内科","access":"しなの鉄道 今井駅よりタクシー約１０分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.595413,"lng":138.162003},{"name":"医療法人川中島クリニック","type":"診療所","zip":"381-2221","address":"長野県長野市川中島町御厨１９４２ー２５","tel":"026-284-3811","amTime":"08:30-12:00","pmTime":"15:00-17:00","url":"","dept":"内科、消化器内科、外科、消化器外科、肛門外科、放射線科","access":"しなの鉄道 今井駅より東へ２０分","note":"内視鏡診断・治療、肝炎治療あり","liverCenter":true,"upperEndoscopy":true,"upperNote":"外来特記事項「内視鏡診断・治療」","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.590702,"lng":138.157593},{"name":"医療法人今井クリニック丸山内科","type":"診療所","zip":"381-2226","address":"長野県長野市川中島町今井３９１番地","tel":"026-284-8280","amTime":"08:30-12:00","pmTime":"15:00-18:00","url":"https://imai.or.jp","dept":"内科、呼吸器内科、消化器内科","access":"JR篠ノ井線・しなの鉄道 今井駅 徒歩8分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.59663,"lng":138.140884},{"name":"篠ノ井鈴木医院","type":"診療所","zip":"381-2223","address":"長野県長野市里島８８","tel":"026-261-1515","amTime":"09:00-11:00","pmTime":"15:30-18:00","url":"","dept":"内科、消化器内科","access":"しなの鉄道 篠ノ井 徒歩20分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"caloo「消化器内視鏡専門医在籍」","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.581963,"lng":138.154785},{"name":"永田医院","type":"診療所","zip":"382-0098","address":"長野県須坂市墨坂南２ー５ー３","tel":"026-248-1711","amTime":"08:30-12:30","pmTime":"15:00-18:00","url":"","dept":"消化器内科、外科、皮膚科","access":"長野電鉄線 須坂駅 徒歩15分","note":"木曜日、日曜日、祝日休診、土曜日午後休診","liverCenter":false,"upperEndoscopy":true,"upperNote":"消化器内科・外科・皮膚科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":false,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.647923,"lng":138.297699},{"name":"かねこ医院","type":"診療所","zip":"382-0911","address":"長野県須坂市須坂１７５５－８","tel":"026-242-3351","amTime":"08:45-11:45","pmTime":"13:45-16:45","url":"https://www.kanekoclinicsuzaka.com","dept":"内科、糖尿病内科、消化器内科","access":"長野電鉄 須坂駅 徒歩15分","note":"毎週水曜日午後、木曜日午前、土曜日午後は休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"内科・糖尿病内科・消化器内科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":false,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.663609,"lng":138.29837},{"name":"佐藤医院","type":"診療所","zip":"382-0911","address":"長野県須坂市須坂１２２４番地２０","tel":"026-246-5300","amTime":"09:00-12:00","pmTime":"15:00-18:00","url":"","dept":"内科、消化器内科","access":"長野電鉄 須坂駅 徒歩5分","note":"火・土曜日：午前のみ","liverCenter":false,"upperEndoscopy":false,"upperNote":"内科・消化器内科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.65694,"lng":138.30426},{"name":"松澤内科クリニック","type":"診療所","zip":"382-0044","address":"長野県須坂市上八町１７５４－２","tel":"026-245-0530","amTime":"","pmTime":"","url":"http://www.matsuzawanaika.com","dept":"内科、消化器内科","access":"すざか市民バス明徳団地線 上八町中バス停徒歩１分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"内科・消化器内科。内視鏡記載未確認","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.627204,"lng":138.31079},{"name":"田崎内科クリニック","type":"診療所","zip":"382-0084","address":"長野県須坂市上町","tel":"026-245-1589","amTime":"09:00-12:00","pmTime":"15:30-18:30","url":"http://www.tazaki-cl.jp/","dept":"内科、消化器内科","access":"長野電鉄須坂駅より徒歩１０分","note":"土曜日午後診療、１３時～１６時","liverCenter":false,"upperEndoscopy":true,"upperNote":"EPARKクリニック「胃内視鏡検査では鎮静剤使用可」","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.652884,"lng":138.313397},{"name":"高須医院","type":"診療所","zip":"388-8014","address":"長野県長野市篠ノ井塩崎６６６７ー２","tel":"026-292-1451","amTime":"09:00-12:00","pmTime":"15:00-17:30","url":"https://www.takasuiin.com/","dept":"内科、消化器内科","access":"長野市乗合タクシー横田塩崎線 東篠ノ井公民館停留所前","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"公式サイト「上部消化管内視鏡検査（胃カメラ）」","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.56422,"lng":138.135502},{"name":"医療法人花と実栗の木診療所","type":"診療所","zip":"381-0201","address":"長野県上高井郡小布施町小布施字烏林２２５８番地１９","tel":"026-242-6565","amTime":"08:30-12:00","pmTime":"15:00-18:00","url":"","dept":"内科、消化器内科、小児科","access":"長野電鉄 小布施 徒歩10分","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"byoinnavi「胃内視鏡（標準型・鼻腔対応）」","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.700615,"lng":138.305597},{"name":"飯綱町立飯綱病院","type":"病院","zip":"389-1211","address":"長野県上水内郡飯綱町牟礼２２２０番地","tel":"026-253-2248","amTime":"08:30-11:30","pmTime":"14:00-16:00","url":"http://iizuna-hp.jp/","dept":"内科、循環器内科、消化器内科、外科、脳神経外科、整形外科、小児科 他","access":"しなの鉄道 牟礼 徒歩20分","note":"各科不定期・完全予約制あり","liverCenter":true,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":true,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":true,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.748962,"lng":138.234406},{"name":"特定医療法人新生病院","type":"病院","zip":"381-0295","address":"長野県上高井郡小布施町小布施８５１番地","tel":"026-247-3099","amTime":"","pmTime":"","url":"http://www.newlife.or.jp","dept":"内科、循環器内科、消化器内科、緩和ケア内科、脳神経外科 他","access":"長野電鉄 小布施 徒歩15分","note":"診療日・時間は月により変動、要電話確認","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市検診実施医療機関一覧（胃がん検診○）","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":true,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":true,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.689175,"lng":138.319046},{"name":"やしろあきたクリニック","type":"診療所","zip":"387-0007","address":"長野県千曲市屋代９５―１","tel":"026-247-8468","amTime":"08:15-11:45","pmTime":"14:00-17:30","url":"https://yashiroakita-clinic.com","dept":"内科、消化器内科、外科、皮膚科","access":"しなの鉄道 屋代高校前駅 徒歩15分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・消化器内科・外科・皮膚科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.536499,"lng":138.134842},{"name":"医療法人中沢医院","type":"診療所","zip":"387-0013","address":"長野県千曲市小島２８０６－１","tel":"026-272-0131","amTime":"08:30-11:45","pmTime":"12:00-17:45","url":"http://www.nakazawaclinic.com/","dept":"内科、呼吸器内科、消化器内科","access":"しなの鉄道 屋代駅 徒歩5分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・呼吸器内科・消化器内科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":false,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.528801,"lng":138.126526},{"name":"島谷医院","type":"診療所","zip":"387-0011","address":"長野県千曲市杭瀬下５－２１－２","tel":"026-273-1201","amTime":"09:00-12:30","pmTime":"14:30-18:00","url":"http://www.shimaya-clinic.jp/","dept":"内科、消化器内科","access":"千曲市循環バス 杭瀬下公園 すぐ","note":"14:30～15:00は大腸内視鏡検査・特定健診の時間","liverCenter":false,"upperEndoscopy":true,"upperNote":"外来特記事項「大腸内視鏡検査実施」（上部は要確認）","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.533718,"lng":138.11644},{"name":"医療法人丸谷医院","type":"診療所","zip":"383-0046","address":"長野県中野市大字片塩４６５番地１","tel":"0269-26-0077","amTime":"08:30-12:00","pmTime":"15:00-18:00","url":"","dept":"内科、消化器内科、小児科","access":"中野駅より車５分","note":"土曜日は午後休診","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・消化器内科・小児科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.739651,"lng":138.340668},{"name":"アライクリニック","type":"診療所","zip":"383-0041","address":"長野県中野市岩船４４４－１","tel":"0269-24-0601","amTime":"08:30-12:00","pmTime":"15:00-17:30","url":"https://araiclinic.net","dept":"内科、消化器内科、放射線科","access":"長野電鉄 信州中野駅 徒歩1分","note":"木曜午後、土曜午後、日曜、祝日休診","liverCenter":false,"upperEndoscopy":true,"upperNote":"公式サイト「胃カメラ/大腸カメラ」、消化器内視鏡専門医","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.744469,"lng":138.364441},{"name":"医療法人 社団 豊栄会 とよき内科","type":"診療所","zip":"389-0806","address":"長野県千曲市磯部７６７ー４","tel":"026-276-0413","amTime":"09:00-12:00","pmTime":"15:00-17:30","url":"http://www.toyoki-naika.com","dept":"内科、循環器内科、消化器内科、腎臓内科","access":"しなの鉄道 戸倉駅 徒歩15分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・循環器内科・消化器内科・腎臓内科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":false,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.484493,"lng":138.154419},{"name":"西原医院","type":"診療所","zip":"383-0021","address":"長野県中野市西２ー３ー１６","tel":"0269-22-3007","amTime":"08:30-12:00","pmTime":"15:00-17:30","url":"","dept":"内科、血液内科、消化器内科、小児科","access":"長野電鉄 信州中野駅 徒歩7分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・血液内科・消化器内科・小児科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.748569,"lng":138.369324},{"name":"須藤医院","type":"診療所","zip":"383-0013","address":"長野県中野市中野１８６８ー７","tel":"0269-22-3746","amTime":"08:30-12:00","pmTime":"15:00-18:00","url":"","dept":"内科、消化器内科","access":"長野電鉄線 中野松川 徒歩3分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・消化器内科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":false,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.750927,"lng":138.374725},{"name":"油井内科医院","type":"診療所","zip":"383-0008","address":"長野県中野市金井８９３－２","tel":"0269-26-1241","amTime":"08:30-12:00","pmTime":"16:00-18:00","url":"http://www.yui-iin.com/","dept":"内科、消化器内科","access":"長電バス中野木島線 高社中学校下車","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"内科・消化器内科。内視鏡記載未確認","lowerEndoscopy":true,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.772945,"lng":138.364853},{"name":"武市医院","type":"診療所","zip":"389-0602","address":"長野県埴科郡坂城町中之条２５２５","tel":"0268-82-2606","amTime":"09:00-12:30","pmTime":"16:00-18:00","url":"https://www.takeichi-iin.jp/","dept":"内科、循環器内科、消化器内科、外科、皮膚科","access":"しなの鉄道テクノさかき駅より徒歩１５分","note":"","liverCenter":false,"upperEndoscopy":false,"upperNote":"内科・循環器内科・消化器内科・外科・皮膚科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.451595,"lng":138.188675},{"name":"村上堂大井クリニック","type":"診療所","zip":"389-0604","address":"長野県埴科郡坂城町網掛１５４５ー１","tel":"0268-81-3131","amTime":"08:45-12:30","pmTime":"14:00-18:00","url":"","dept":"内科、消化器内科、外科、肛門外科","access":"坂城町循環バス村上堂大井クリニック前下車","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"mynavi「上部消化管内視鏡検査」記載","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":false,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.442585,"lng":138.173508},{"name":"医療法人小林会 小林医院","type":"診療所","zip":"386-2203","address":"長野県上田市真田町傍陽５７１","tel":"0268-75-3555","amTime":"08:30-12:15","pmTime":"12:30-17:45","url":"","dept":"内科、消化器内科、小児科、放射線科","access":"傍陽線小林医院前","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・消化器内科・小児科・放射線科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"長野市かかりつけ医機能情報（小林医院：腹部超音波検査○）","ct":false,"ctNote":"長野市かかりつけ医機能情報（小林医院：CT記載なし）","mri":true,"mriNote":"長野市かかりつけ医機能情報（小林医院：MRI○）","lat":36.44987,"lng":138.298388},{"name":"医療法人社団玉井会玉井医院","type":"診療所","zip":"399-7701","address":"長野県東筑摩郡麻績村麻４１５６番１号","tel":"0263-67-2231","amTime":"08:30-12:00","pmTime":"16:00-18:00","url":"","dept":"内科、消化器内科、小児科","access":"聖高原駅から１０分","note":"水曜日午後、土曜日午後および日祭日休診","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・消化器内科・小児科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":false,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.458355,"lng":138.047989},{"name":"上田生協診療所","type":"診療所","zip":"386-0042","address":"長野県上田市上塩尻３９３番地１","tel":"0268-23-0199","amTime":"08:30-11:30","pmTime":"14:00-16:30","url":"http://www.toshin-iryou.com","dept":"内科、呼吸器内科、循環器内科、消化器内科、小児科、放射線科","access":"しなの鉄道 西上田 徒歩15分","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"内科・呼吸器内科・消化器内科・小児科。内視鏡記載未確認","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に掲載なし（要確認）","us":true,"usNote":"かかりつけ医機能情報に掲載なし（要確認）","ct":true,"ctNote":"かかりつけ医機能情報に掲載なし（要確認）","mri":false,"mriNote":"かかりつけ医機能情報に掲載なし（要確認）","lat":36.415257,"lng":138.221344},{"name":"朝日ながの病院","type":"病院","zip":"380-0803","address":"長野市三輪1-2-43","tel":"026-215-8081","amTime":"9:00〜12:30","pmTime":"14:00〜17:30","url":"https://www.asahi-nagano.com/","dept":"内科 内視鏡内科 婦人科 リハビリテーション科 泌尿器科","access":"","note":"療養病床161床","liverCenter":false,"upperEndoscopy":true,"upperNote":"標ぼう科目「内視鏡内科」・長野市かかりつけ医機能情報（上部消化管内視鏡○）","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（腹部超音波検査○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（CT○）","mri":false,"mriNote":"長野市かかりつけ医機能情報（MRI記載なし）","lat":36.65522,"lng":138.205017},{"name":"釜田内科胃腸科小児科医院","type":"診療所","zip":"380-0871","address":"長野市大字西長野298-7","tel":"026-233-0040","amTime":"9:00〜12:00","pmTime":"15:00〜17:30","url":"","dept":"内科 小児科 消化器科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":false,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.658951,"lng":138.176559},{"name":"春日内科・糖尿病医院","type":"診療所","zip":"380-0861","address":"長野市大字横沢1288","tel":"026-232-2205","amTime":"9:00〜12:00","pmTime":"17:00〜18:00","url":"https://kasuga-iin.jp","dept":"内科 糖尿病内科","access":"","note":"","liverCenter":false,"upperEndoscopy":false,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.660846,"lng":138.185681},{"name":"小谷医院","type":"診療所","zip":"380-0836","address":"長野市大字上松1-1","tel":"026-232-8360","amTime":"9:00〜12:00","pmTime":"15:00〜17:30","url":"","dept":"内科","access":"","note":"","liverCenter":true,"upperEndoscopy":false,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.670261,"lng":138.197397},{"name":"川上内科医院","type":"診療所","zip":"380-0836","address":"長野市上松4-2-18","tel":"026-241-5033","amTime":"9:00〜12:00","pmTime":"","url":"","dept":"内科","access":"","note":"","liverCenter":false,"upperEndoscopy":false,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.671688,"lng":138.203094},{"name":"岡田内科","type":"診療所","zip":"380-0834","address":"長野市大字西鶴賀町1437-8","tel":"026-235-1788","amTime":"9:00〜12:30","pmTime":"15:00〜17:00","url":"","dept":"内科 循環器内科 糖尿病内科","access":"","note":"","liverCenter":false,"upperEndoscopy":false,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.653797,"lng":138.195766},{"name":"恵信会クリニック","type":"診療所","zip":"380-0824","address":"長野市西後町610","tel":"026-234-2880","amTime":"9:00〜12:00","pmTime":"14:00〜17:30","url":"https://keishinkai-clinic.jp","dept":"内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.65353,"lng":138.186207},{"name":"竹内医院","type":"診療所","zip":"380-0846","address":"長野市南県町690-1","tel":"026-232-5457","amTime":"8:30〜12:00","pmTime":"16:00〜18:00","url":"","dept":"内科","access":"","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.651094,"lng":138.183975},{"name":"愛和病院","type":"病院","zip":"380-0833","address":"長野市鶴賀字清水1200","tel":"026-217-3991","amTime":"9:30〜12:00","pmTime":"16:00〜17:30","url":"","dept":"内科 消化器内科 リハビリテーション科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.646187,"lng":138.19524},{"name":"南長池診療所","type":"診療所","zip":"381-0016","address":"長野市南長池1181-1","tel":"026-263-1234","amTime":"9:00〜11:00","pmTime":"15:30〜18:00","url":"","dept":"内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.644581,"lng":138.232864},{"name":"北野病院","type":"病院","zip":"380-0803","address":"長野市三輪3-12-50","tel":"026-241-0631","amTime":"9:00〜12:30","pmTime":"14:00〜17:00","url":"","dept":"内科 消化器内科 外科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.661586,"lng":138.203738},{"name":"宮沢医院","type":"診療所","zip":"381-0043","address":"長野市吉田2-11-11","tel":"026-241-5956","amTime":"8:30〜12:00","pmTime":"15:00〜17:30","url":"","dept":"内科","access":"","note":"","liverCenter":false,"upperEndoscopy":false,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.669727,"lng":138.218029},{"name":"さかいざわクリニック","type":"診療所","zip":"381-0042","address":"長野市稲田2-1-25","tel":"026-217-5181","amTime":"8:30〜11:30","pmTime":"14:30〜17:30","url":"","dept":"内科 皮膚科","access":"","note":"","liverCenter":false,"upperEndoscopy":false,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.675183,"lng":138.224605},{"name":"稲田クリニック","type":"診療所","zip":"381-0042","address":"長野市稲田3-6-15","tel":"026-263-3811","amTime":"9:00〜12:00","pmTime":"15:00〜18:00","url":"","dept":"内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.670849,"lng":138.229019},{"name":"富竹クリニック","type":"診療所","zip":"381-0006","address":"長野市富竹1-14-15","tel":"026-295-6643","amTime":"9:00〜12:00","pmTime":"14:00〜17:00","url":"https://tomitake1628.wixsite.com/clinic","dept":"内科 消化器内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.67298,"lng":138.257017},{"name":"中島医院","type":"診療所","zip":"381-2225","address":"長野市柳原2470-5","tel":"026-295-0600","amTime":"8:30〜12:00","pmTime":"15:30〜18:00","url":"","dept":"内科","access":"","note":"","liverCenter":true,"upperEndoscopy":false,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.664477,"lng":138.25927},{"name":"清水内科クリニック","type":"診療所","zip":"381-0034","address":"長野市若槻東条830-1","tel":"026-295-3522","amTime":"8:30〜12:30","pmTime":"15:00〜18:00","url":"","dept":"内科","access":"","note":"","liverCenter":true,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.685146,"lng":138.220496},{"name":"竹中内科医院","type":"診療所","zip":"381-0036","address":"長野市上野1-10-15","tel":"026-295-5117","amTime":"9:00〜12:00","pmTime":"15:00〜18:00","url":"","dept":"内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.685955,"lng":138.228478},{"name":"安茂里堀越内科クリニック","type":"診療所","zip":"380-0803","address":"長野市安茂里小市3-8-28","tel":"026-229-5890","amTime":"9:00〜12:00","pmTime":"15:30〜18:00","url":"","dept":"内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":false,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.625861,"lng":138.163977},{"name":"西和田　林クリニック","type":"診療所","zip":"381-0011","address":"長野市西和田1-39-10","tel":"026-263-0884","amTime":"8:30〜12:00","pmTime":"15:00〜18:00","url":"","dept":"外科 消化器外科 乳腺外科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.650543,"lng":138.222366},{"name":"小島病院","type":"病院","zip":"380-0928","address":"長野市若里5-3-10","tel":"026-217-3861","amTime":"8:30〜13:00","pmTime":"15:00〜17:30","url":"","dept":"内科 消化器内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.627945,"lng":138.185552},{"name":"山田記念朝日病院","type":"病院","zip":"381-0014","address":"長野市南堀153","tel":"026-244-6411","amTime":"9:00〜12:30","pmTime":"14:00〜17:30","url":"","dept":"内科 消化器外科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":true,"mriNote":"長野市かかりつけ医機能情報","lat":36.664391,"lng":138.241196},{"name":"長野松代総合病院附属若穂病院","type":"病院","zip":"381-2203","address":"長野市若穂綿内3252","tel":"026-282-7111","amTime":"8:30〜17:00","pmTime":"","url":"","dept":"内科 外科 整形外科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報","lowerEndoscopy":false,"lowerNote":"長野市かかりつけ医機能情報","us":true,"usNote":"長野市かかりつけ医機能情報","ct":true,"ctNote":"長野市かかりつけ医機能情報","mri":false,"mriNote":"長野市かかりつけ医機能情報","lat":36.615631,"lng":138.256116},{"name":"医療法人樹会 小林医院","type":"診療所","zip":"380-0935","address":"長野市中御所4丁目7-23","tel":"026-228-3030","amTime":"8:30-11:30","pmTime":"16:00-17:30（月水金のみ）","url":"https://www.tatsukikai-kobayashi-clinic.com","dept":"内科 消化器内科 循環器内科 小児科","access":"長野駅よりバス7分・荒木入口バス停すぐ前","note":"MRI人間ドック実施。院内処方。駐車場23台","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報（上部消化管内視鏡○）","lowerEndoscopy":true,"lowerNote":"長野市かかりつけ医機能情報（下部消化管内視鏡○）","us":true,"usNote":"長野市かかりつけ医機能情報（腹部超音波○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（CT○）","mri":true,"mriNote":"公式サイト・病院なびにMRI記載あり","lat":36.633213,"lng":138.18248},{"name":"池田クリニック","type":"診療所","zip":"380-0802","address":"長野市上松2-29-16","tel":"026-233-5668","amTime":"8:30〜12:00","pmTime":"15:00〜18:00","url":"https://ikeda-clinic-nagano.com","dept":"内科 リウマチ科 循環器内科","access":"","note":"水午前・土午後休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.667751,"lng":138.192108},{"name":"磯村クリニック","type":"診療所","zip":"380-0834","address":"長野市権堂町2465-1","tel":"026-234-8282","amTime":"9:00〜12:30","pmTime":"16:00〜18:00","url":"","dept":"内科 放射線科","access":"","note":"水土午後休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（CT○）","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.652187,"lng":138.192},{"name":"武田医院","type":"診療所","zip":"380-0928","address":"長野市若里1-11-14","tel":"026-226-0871","amTime":"9:00〜12:00","pmTime":"16:00〜17:30","url":"","dept":"内科 消化器内科","access":"","note":"土午後・木曜休診の場合あり","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.635108,"lng":138.19082},{"name":"ながのファミリークリニック","type":"診療所","zip":"380-0935","address":"長野市中御所1-8-10","tel":"026-217-6610","amTime":"9:00〜18:00","pmTime":"","url":"https://www.naganofc.jp","dept":"内科 総合診療科 在宅医療","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"長野市かかりつけ医機能情報（上部消化管内視鏡○）","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.641232,"lng":138.184372},{"name":"堀越医院","type":"診療所","zip":"381-0022","address":"長野市平林1-10-2","tel":"026-243-5141","amTime":"9:00〜12:00","pmTime":"15:30〜18:00","url":"","dept":"内科 消化器内科","access":"","note":"土午後休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.652119,"lng":138.209991},{"name":"かくた内科クリニック","type":"診療所","zip":"380-0803","address":"長野市三輪1-4-13","tel":"026-262-1166","amTime":"9:00〜12:30","pmTime":"15:00〜18:00","url":"","dept":"内科 消化器内科","access":"","note":"水土午後休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.65612,"lng":138.204483},{"name":"MAMORU内科クリニック","type":"診療所","zip":"380-0803","address":"長野市三輪1-9-3","tel":"026-219-6297","amTime":"9:00〜12:00","pmTime":"13:00〜18:00","url":"","dept":"内科","access":"","note":"土曜全日休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.656986,"lng":138.207367},{"name":"仁科医院","type":"診療所","zip":"381-0044","address":"長野市桐原1-13-23","tel":"026-241-3730","amTime":"8:45〜12:00","pmTime":"15:00〜18:00","url":"","dept":"内科 小児科","access":"","note":"水曜・第1,3土午後休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.663788,"lng":138.21196},{"name":"加藤内科","type":"診療所","zip":"381-0053","address":"長野市神楽橋10-117","tel":"026-243-6877","amTime":"8:30〜12:00","pmTime":"15:00〜18:00","url":"","dept":"内科","access":"","note":"木土午後休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.680706,"lng":138.209213},{"name":"小口内科小児科医院","type":"診療所","zip":"381-0034","address":"長野市若槻団地5-1","tel":"026-241-5588","amTime":"8:30〜12:30","pmTime":"15:30〜18:00","url":"","dept":"内科 小児科","access":"","note":"水午後休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.680096,"lng":138.215591},{"name":"轟医院","type":"診療所","zip":"381-1231","address":"長野市松代町松代629","tel":"026-278-2135","amTime":"8:30〜12:30","pmTime":"14:30〜18:00","url":"","dept":"内科 消化器内科","access":"","note":"土午後休診","liverCenter":true,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":true,"ctNote":"長野市かかりつけ医機能情報（CT○）","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.565006,"lng":138.202164},{"name":"あらかわファミリークリニック","type":"診療所","zip":"381-0016","address":"長野市北長池1070-1","tel":"026-251-0808","amTime":"8:30〜12:00","pmTime":"14:00〜18:00","url":"","dept":"小児科 内科","access":"","note":"土午後休診","liverCenter":false,"upperEndoscopy":false,"upperNote":"かかりつけ医機能情報に記載なし","lowerEndoscopy":false,"lowerNote":"かかりつけ医機能情報に記載なし","us":true,"usNote":"長野市かかりつけ医機能情報（腹部US○）","ct":false,"ctNote":"かかりつけ医機能情報に記載なし","mri":false,"mriNote":"かかりつけ医機能情報に記載なし","lat":36.649345,"lng":138.242966},{"name":"三井クリニック","type":"診療所","zip":"381-2217","address":"長野市稲里町中央4-5-30","tel":"026-291-0088","amTime":"","pmTime":"","url":"","dept":"内科 消化器内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"要確認","lowerEndoscopy":true,"lowerNote":"要確認","us":true,"usNote":"要確認","ct":false,"ctNote":"要確認","mri":false,"mriNote":"要確認","lat":36.605011,"lng":138.16925},{"name":"稲里生協クリニック","type":"診療所","zip":"381-2217","address":"長野市稲里町中央2-17-8","tel":"","amTime":"","pmTime":"","url":"","dept":"内科 消化器内科","access":"","note":"","liverCenter":false,"upperEndoscopy":true,"upperNote":"要確認","lowerEndoscopy":false,"lowerNote":"要確認","us":true,"usNote":"要確認","ct":false,"ctNote":"要確認","mri":false,"mriNote":"要確認","lat":36.60244,"lng":138.170731},{"name":"片桐内科クリニック","type":"診療所","zip":"380-0802","address":"長野市上松4-33-7","tel":"026-215-1900","amTime":"8:45〜12:00","pmTime":"15:00〜18:00","url":"https://www.katagiri-naika-clinic.com/","dept":"内科、糖尿病内科、消化器内科、呼吸器内科","access":"長電バス 湯谷小学校下車すぐ","note":"木曜は午前のみ、土曜8:45〜13:00","liverCenter":false,"upperEndoscopy":true,"upperNote":"公式サイト「胃カメラ年間200件ほどの実績」","lowerEndoscopy":false,"lowerNote":"要確認","us":true,"usNote":"要確認","ct":false,"ctNote":"要確認","mri":false,"mriNote":"要確認","lat":36.676018,"lng":138.202866},{"name":"小島内科","type":"診療所","zip":"380-0823","address":"長野市南千歳2-2-8","tel":"026-226-2181","amTime":"9:00〜12:00","pmTime":"15:00〜18:00","url":"http://mcs-kojimanaika.com/","dept":"内科、循環器内","access":"JR・長電 長野駅 徒歩5分","note":"月曜午後は16:00〜18:00、木・土曜は午前のみ","liverCenter":false,"upperEndoscopy":false,"upperNote":"要確認","lowerEndoscopy":false,"lowerNote":"要確認","us":true,"usNote":"要確認","ct":false,"ctNote":"要確認","mri":false,"mriNote":"要確認","lat":36.646809,"lng":138.189133}];
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+async function getRoadDistances(origin, hospitals) {
+  const coords = [origin.lng+','+origin.lat]
+    .concat(hospitals.map(h => h.lng+','+h.lat)).join(';');
+  const res = await fetch('https://router.project-osrm.org/table/v1/driving/'+coords+'?sources=0&annotations=distance');
+  const data = await res.json();
+  if (data.code !== 'Ok') throw new Error('OSRM: '+data.code);
+  return data.distances[0].slice(1).map(d => d !== null ? d/1000 : null);
+}
+
+async function getCoords(zipcode, baseAddress, addrDetail) {
+  if (addrDetail) {
+    const fullAddr = baseAddress + addrDetail;
+    const res = await fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(fullAddr));
+    const data = await res.json();
+    if (Array.isArray(data) && data[0] && data[0].geometry)
+      return { lat: data[0].geometry.coordinates[1], lng: data[0].geometry.coordinates[0], resolvedAddress: data[0].properties.title };
+  }
+  const res = await fetch('https://geoapi.heartrails.com/api/json?method=searchByPostal&postal='+zipcode);
+  const data = await res.json();
+  if (data.response && data.response.location && data.response.location.length) {
+    const loc = data.response.location[0];
+    return { lat: parseFloat(loc.y), lng: parseFloat(loc.x), resolvedAddress: loc.prefecture+loc.city+loc.town };
+  }
+  throw new Error('位置情報を取得できませんでした（郵便番号: '+zipcode+'）');
+}
+
+async function doSearch() {
+  const townEl = document.getElementById('townDisplay');
+  const baseAddress = townEl.textContent.trim();
+  const addrDetail = document.getElementById('addrInput').value.trim();
+  const statusEl = document.getElementById('statusMsg');
+  const resultsEl = document.getElementById('results');
+  const btn = document.getElementById('btnSearch');
+
+  if (!baseAddress || townEl.classList.contains('loading') || townEl.classList.contains('error')) {
+    statusEl.textContent = '郵便番号を入力して地名を確認してください。';
+    statusEl.className = 'status error'; return;
+  }
+  btn.disabled = true;
+  statusEl.className = 'status';
+  statusEl.textContent = '位置情報を取得中...';
+  resultsEl.innerHTML = '';
+  document.getElementById('mapContainer').style.display = 'none';
+
+  let coords;
+  const zipcode = townEl.dataset.zip || '';
+  try { coords = await getCoords(zipcode, baseAddress, addrDetail); }
+  catch (e) { statusEl.textContent = e.message; statusEl.className = 'status error'; btn.disabled = false; return; }
+
+  statusEl.textContent = '検索中（基準住所: '+coords.resolvedAddress+'）';
+
+  const needUpper = document.getElementById('chk_upper').checked;
+  const needLower = document.getElementById('chk_lower').checked;
+  const needUs    = document.getElementById('chk_us').checked;
+  const needCt    = document.getElementById('chk_ct').checked;
+  const needMri   = document.getElementById('chk_mri').checked;
+  const needLiver = document.getElementById('chk_liver').checked;
+
+  const filtered = HOSPITALS.filter(h => {
+    if (!h.lat || !h.lng) return false;
+    if (needUpper && !h.upperEndoscopy) return false;
+    if (needLower && !h.lowerEndoscopy) return false;
+    if (needUs    && !h.us) return false;
+    if (needCt    && !h.ct) return false;
+    if (needMri   && !h.mri) return false;
+    if (needLiver && !h.liverCenter) return false;
+    return true;
+  });
+
+  const ADJACENT_KM = 2.0;
+  const townMatch = baseAddress.match(/[市区町村](.+)/);
+  const patientTown = townMatch ? townMatch[1].replace(/^大字/, '') : '';
+
+  const withStraight = filtered.map(h => {
+    const d = haversine(coords.lat, coords.lng, h.lat, h.lng);
+    const same = patientTown.length >= 2 && h.address.includes(patientTown);
+    return { ...h, straightDist: d, sameTown: same, adjacentTown: !same && d <= ADJACENT_KM };
+  });
+  withStraight.sort((a, b) => a.straightDist - b.straightDist);
+
+  const priority = withStraight.filter(h => h.sameTown || h.adjacentTown);
+  const others   = withStraight.filter(h => !h.sameTown && !h.adjacentTown);
+  const candidates = [...priority, ...others.slice(0, Math.max(20 - priority.length, 6))];
+
+  let sortedResults;
+  try {
+    statusEl.textContent = '経路距離を計算中...';
+    const roadKms = await getRoadDistances(coords, candidates);
+    sortedResults = candidates.map((h, i) => ({
+      ...h,
+      distance: roadKms[i] !== null ? roadKms[i] : h.straightDist,
+      isRoad: roadKms[i] !== null
+    }));
+  } catch {
+    sortedResults = candidates.map(h => ({ ...h, distance: h.straightDist, isRoad: false }));
+  }
+
+  sortedResults.sort((a, b) => {
+    const pa = a.sameTown ? 0 : a.adjacentTown ? 1 : 2;
+    const pb = b.sameTown ? 0 : b.adjacentTown ? 1 : 2;
+    if (pa !== pb) return pa - pb;
+    return a.distance - b.distance;
+  });
+  const top6 = sortedResults.slice(0, 6);
+
+  statusEl.textContent = '';
+  btn.disabled = false;
+
+  if (top6.length === 0) {
+    resultsEl.innerHTML = '<div class="card"><div class="no-result">条件に合致する医療機関が見つかりませんでした。<br>検索条件を変更してお試しください。</div></div>';
+    return;
+  }
+
+  const rankClass = ['rank-1','rank-2','rank-3','','',''];
+  const featDefs = [
+    {key:'upperEndoscopy', label:'上部内視鏡'},
+    {key:'lowerEndoscopy', label:'下部内視鏡'},
+    {key:'us',            label:'US'},
+    {key:'ct',            label:'CT'},
+    {key:'mri',           label:'MRI'},
+    {key:'liverCenter',   label:'肝疾患センター'}
+  ];
+  const selectedKeys = [];
+  if (needUpper) selectedKeys.push('upperEndoscopy');
+  if (needLower) selectedKeys.push('lowerEndoscopy');
+  if (needUs)    selectedKeys.push('us');
+  if (needCt)    selectedKeys.push('ct');
+  if (needMri)   selectedKeys.push('mri');
+  if (needLiver) selectedKeys.push('liverCenter');
+  const showFeats = selectedKeys.length > 0 ? featDefs.filter(f => selectedKeys.includes(f.key)) : featDefs;
+
+  const mapUrl = 'https://www.google.com/maps?q='+coords.lat+','+coords.lng;
+  let html = '<div class="base-point"><span class="bp-label">検索基準地点:</span><span class="bp-addr">'+esc(coords.resolvedAddress)+'</span><a class="bp-link" href="'+mapUrl+'" target="_blank" rel="noopener">地図で確認 ↗</a></div>';
+  html += '<div class="result-count">検索結果: '+filtered.length+'件中、距離の近い'+top6.length+'件を表示</div>';
+
+  top6.forEach((h, i) => {
+    const distNum = h.distance < 1 ? Math.round(h.distance*1000)+'m' : h.distance.toFixed(1)+'km';
+    const dist = (h.isRoad ? '🚗 ' : '📏 ') + distNum;
+    const townBadge = h.sameTown
+      ? '<span style="font-size:0.7rem;background:#fefcbf;color:#744210;border:1px solid #f6e05e;padding:1px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;">同地区</span>'
+      : h.adjacentTown
+        ? '<span style="font-size:0.7rem;background:#e9f5e9;color:#276227;border:1px solid #9ae6b4;padding:1px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;">隣接地区</span>'
+        : '';
+    const featsHtml = showFeats.map(f => {
+      const ok = h[f.key];
+      return '<span class="feat-tag '+(f.key==='liverCenter'?(ok?'feat-liver-ok':'feat-ng'):(ok?'feat-ok':'feat-ng'))+'">'+(ok?'✓':'✗')+' '+f.label+'</span>';
+    }).join('');
+    html += '<div class="hospital-card '+(rankClass[i]||'')+'">';
+    html += '<div class="h-header">';
+    html += '<div class="h-rank">'+(i+1)+'</div>';
+    html += '<div style="flex:1"><div class="h-name">'+esc(h.name)+townBadge+'</div><div style="font-size:0.78rem;color:#718096;margin-top:2px;">'+esc(h.type)+'</div></div>';
+    html += '<div class="h-dist">約 '+dist+'</div>';
+    html += '</div>';
+    html += '<div class="h-body">';
+    html += '<div class="item"><span class="label">住所</span><span class="val">'+esc(h.address)+'</span></div>';
+    if (h.tel)  html += '<div class="item"><span class="label">電話</span><span class="val"><a href="tel:'+esc(h.tel)+'">'+esc(h.tel)+'</a></span></div>';
+    if (h.dept) html += '<div class="item" style="grid-column:1/-1"><span class="label">診療科</span><span class="val">'+esc(h.dept)+'</span></div>';
+    if (h.access) html += '<div class="item"><span class="label">交通</span><span class="val">'+esc(h.access)+'</span></div>';
+    if (h.url)  html += '<div class="item"><span class="label">URL</span><span class="val"><a href="'+esc(h.url)+'" target="_blank" rel="noopener">'+esc(h.url)+'</a></span></div>';
+    if (h.note) html += '<div class="item" style="grid-column:1/-1"><span class="label">備考</span><span class="val">'+esc(h.note)+'</span></div>';
+    html += '</div>';
+    if (featsHtml) html += '<div class="features">'+featsHtml+'</div>';
+    html += '</div>';
+  });
+
+  resultsEl.innerHTML = html;
+  renderMap(coords, top6);
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let _map = null;
+function renderMap(origin, hospitals) {
+  const container = document.getElementById('mapContainer');
+  container.style.display = 'block';
+  if (_map) { _map.remove(); _map = null; }
+  const map = L.map('map').setView([origin.lat, origin.lng], 13);
+  _map = map;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+  const originIcon = L.divIcon({
+    className: '',
+    html: '<div style="background:#e53e3e;color:white;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);">📍</div>',
+    iconSize: [34,34], iconAnchor: [17,17]
+  });
+  L.marker([origin.lat, origin.lng], {icon: originIcon}).addTo(map)
+    .bindPopup('<b>検索基準地点</b><br>'+esc(origin.resolvedAddress));
+  const colors = ['#d69e2e','#a0aec0','#c05621','#2b6cb0','#2b6cb0','#2b6cb0'];
+  hospitals.forEach((h, i) => {
+    const color = colors[i] || '#2b6cb0';
+    const distNum = h.distance < 1 ? Math.round(h.distance*1000)+'m' : h.distance.toFixed(1)+'km';
+    const badge = h.sameTown ? '🟡同地区' : h.adjacentTown ? '🟢隣接' : '';
+    const icon = L.divIcon({
+      className: '',
+      html: '<div style="background:'+color+';color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:13px;border:2px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.35);">'+(i+1)+'</div>',
+      iconSize: [30,30], iconAnchor: [15,15]
+    });
+    const popup = '<b>'+(i+1)+'位: '+esc(h.name)+'</b>'+(badge?' '+badge:'')+'<br>'+distNum+'<br><span style="font-size:0.85em;color:#555;">'+esc(h.address)+'</span>';
+    L.marker([h.lat, h.lng], {icon}).addTo(map).bindPopup(popup);
+  });
+  const allPoints = [[origin.lat, origin.lng], ...hospitals.map(h => [h.lat, h.lng])];
+  map.fitBounds(L.latLngBounds(allPoints).pad(0.15));
+}
+
+let zipLookupTimer = null;
+document.getElementById('zipInput').addEventListener('input', function() {
+  const z = this.value.replace(/[^\d]/g, '');
+  const townEl = document.getElementById('townDisplay');
+  const addrRow = document.getElementById('addrRow');
+  clearTimeout(zipLookupTimer);
+  if (z.length !== 7) { townEl.style.display='none'; addrRow.style.display='none'; return; }
+  townEl.textContent = '検索中...';
+  townEl.className = 'town-display loading';
+  townEl.style.display = 'inline-block';
+  addrRow.style.display = 'none';
+  zipLookupTimer = setTimeout(async () => {
+    try {
+      const res = await fetch('https://zipcloud.ibsnet.co.jp/api/search?zipcode='+z);
+      const data = await res.json();
+      if (!data.results || !data.results.length) {
+        townEl.textContent = '郵便番号が見つかりません'; townEl.className = 'town-display error';
+      } else {
+        const r = data.results[0];
+        townEl.textContent = r.address1+r.address2+r.address3;
+        townEl.dataset.zip = z;
+        townEl.className = 'town-display';
+        addrRow.style.display = 'flex';
+        document.getElementById('addrInput').focus();
+      }
+    } catch { townEl.textContent = '取得エラー'; townEl.className = 'town-display error'; }
+  }, 400);
+});
+document.getElementById('zipInput').addEventListener('keydown', e => { if (e.key==='Enter') doSearch(); });
+document.getElementById('addrInput').addEventListener('keydown', e => { if (e.key==='Enter') doSearch(); });
+</script>
+</body>
+</html>
